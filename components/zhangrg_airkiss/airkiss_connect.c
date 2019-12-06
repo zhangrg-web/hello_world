@@ -309,12 +309,13 @@ static void airkiss_send_ack_task(void *pvParameters)
     server_addr.sin_port = htons(AIRKISS_ACK_PORT);
 
 //0.0.0.32
+/*
 	uint8_t mac[6] = {0};
 	char macaddr[18] = {0};
 	esp_read_mac((uint8_t *)mac, ESP_MAC_ETH);
 	sprintf(macaddr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	//ESP_LOGI(TAG, "%s", macaddr);
-
+*/
     buf[0] = (uint8_t)ak_random_num;
     esp_wifi_get_mac(WIFI_IF_STA, &buf[1]);
 
@@ -339,8 +340,8 @@ static void airkiss_send_ack_task(void *pvParameters)
                 sendlen = sendto(send_socket, buf, 7, 0,
                                  (struct sockaddr *) &server_addr, sin_size);
 						
-						sendto(send_socket, macaddr, 18, 0,
-                                 (struct sockaddr *) &server_addr, sin_size);
+						//sendto(send_socket, macaddr, 18, 0,
+                                 //(struct sockaddr *) &server_addr, sin_size);
                 if (sendlen > 0) {
                     /* Totally send 30 airkiss ACKs. Then airkiss is successful. */
                     if (count++ >= 30) {
@@ -571,7 +572,10 @@ static void airkiss_start(int timeout)
     }
 
 #ifdef CONFIG_AIRKISS_CRYPT
+	ESP_LOGW(TAG, "Airkiss I need key!");
     airkiss_set_key(ak_ctx, (uint8_t *)key, strlen(key));
+#else
+	ESP_LOGW(TAG, "Airkiss I needn't key!");
 #endif
 
     ESP_LOGI(TAG, "Airkiss version:%s", airkiss_version());

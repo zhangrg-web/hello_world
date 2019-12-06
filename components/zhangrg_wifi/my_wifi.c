@@ -22,14 +22,10 @@
 
 #include "my_wifi.h"
 
-/* FreeRTOS event group to signal when we are connected & ready to make a request */
-//static EventGroupHandle_t s_wifi_event_group;
+//if now_in_smartconfig,wifi must disconnect,don't reconnect wifi
+extern bool can_reconnect_wifi;
 
-/* The event group allows multiple bits for each event,
-   but we only care about one event - are we connected
-   to the AP with an IP? */
-//static const int CONNECTED_BIT = BIT0;
-//static const int ESPTOUCH_DONE_BIT = BIT1;
+
 static const char *TAG = "my_wifi";
 
 static esp_err_t event_handler(void *ctx, system_event_t *event)
@@ -40,8 +36,8 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
 	
 	      	//confing default ssid and password
 			wifi_config_t wifi_config = {
-				.sta.ssid = "GIEC",
-				.sta.password = "giecgiec",
+				.sta.ssid = "TP-LINK_1CCF",
+				.sta.password = "smart-home",
 			};
 			ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
 			ESP_LOGI(TAG, "Start to connect WIFI:%s, PSW:%s", wifi_config.sta.ssid, wifi_config.sta.password);
@@ -60,8 +56,12 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
 	        break;
 	    case SYSTEM_EVENT_STA_DISCONNECTED:
 			ESP_LOGI(TAG, "SYSTEM_EVENT_STA_DISCONNECTED");
-	        esp_wifi_connect();
-	        //xEventGroupClearBits(s_wifi_event_group, CONNECTED_BIT);
+			if(can_reconnect_wifi){
+				//my_wifi_reconnect();
+			}else{
+				ESP_LOGI(TAG, "now_in_smartconfig,not to reconnect WIFI");
+			}
+
 	        break;
 	    default:
 	        break;
@@ -69,10 +69,19 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
+static void my_wifi_reconnect(void)
+{
+	wifi_config_t w_config;
+    memset(&w_config, 0x00, sizeof(wifi_config_t));
+    esp_wifi_get_config(WIFI_IF_STA, &w_config);
+	ESP_LOGI(TAG, "now reconnect WIFI:%s PSW:%s", w_config.sta.ssid, w_config.sta.password);
+	esp_wifi_connect();
+}
+
 void initialise_wifi(void)
 {
     tcpip_adapter_init();
-    //s_wifi_event_group = xEventGroupCreate();
+	
     ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();

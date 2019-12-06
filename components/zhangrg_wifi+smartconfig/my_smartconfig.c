@@ -29,6 +29,9 @@ static EventGroupHandle_t smartconfig_event_group;
 static const int ESPTOUCH_DONE_BIT = BIT0;
 static const char *TAG = "my_smartconfig";
 
+bool now_in_smartconfig = false;
+bool can_reconnect_wifi = true;
+
 static void sc_callback(smartconfig_status_t status, void *pdata)
 {
     switch (status) {
@@ -40,12 +43,12 @@ static void sc_callback(smartconfig_status_t status, void *pdata)
             break;
         case SC_STATUS_GETTING_SSID_PSWD:
             ESP_LOGI(TAG, "SC_STATUS_GETTING_SSID_PSWD");
+			can_reconnect_wifi = true;
             break;
         case SC_STATUS_LINK:
             ESP_LOGI(TAG, "SC_STATUS_LINK");
             wifi_config_t *wifi_config = pdata;
-            ESP_LOGI(TAG, "SSID:%s", wifi_config->sta.ssid);
-            ESP_LOGI(TAG, "PASSWORD:%s", wifi_config->sta.password);
+            ESP_LOGI(TAG, "WIFI:%s, PSW:%s", wifi_config->sta.ssid, wifi_config->sta.password);
             ESP_ERROR_CHECK( esp_wifi_disconnect() );
             ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, wifi_config) );
             ESP_ERROR_CHECK( esp_wifi_connect() );
@@ -75,12 +78,22 @@ void smartconfig_example_task(void * parm)
         if(uxBits & ESPTOUCH_DONE_BIT) {
             ESP_LOGI(TAG, "smartconfig over");
             esp_smartconfig_stop();
-            vTaskDelete(NULL);
+			now_in_smartconfig = false;
+			vTaskDelete(NULL);
         }
     }
 }
 
 void smartconfig_start(void)
 {
+	can_reconnect_wifi = false;
+	if(now_in_smartconfig){	
+		ESP_LOGI(TAG, "now_in_smartconfig, wait to stop...");
+		xEventGroupSetBits(smartconfig_event_group, ESPTOUCH_DONE_BIT);
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+	}	
+
+	now_in_smartconfig = true;
+	ESP_LOGI(TAG, "new smartconfig");
 	xTaskCreate(smartconfig_example_task, "smartconfig_example_task", 2048+1024, NULL, 3, NULL);
 }
