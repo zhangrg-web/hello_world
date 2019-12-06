@@ -41,10 +41,14 @@
 #include "esp_shell.h"
 #include "TerminalControlService.h"
 
-//smartconfig + wifi
+//wifi
+#include "my_wifi.h"
+//smartconfig
 #include "my_smartconfig.h"
 //mqtt
 #include "my_mqtt.h"
+//airkiss
+#include "my_airkiss.h"
 
 #define Tag                            "TERM_CTRL"
 
@@ -74,9 +78,14 @@ static void show_version(void *ref, int argc, char *argv[])
     printf("------------------------------------------------------------------------------\r\n");
 }
 
-static void test_smartconfig(void *ref, int argc, char *argv[])
+static void test_wifi(void *ref, int argc, char *argv[])
 {
 	initialise_wifi();
+}
+
+static void test_smartconfig(void *ref, int argc, char *argv[])
+{
+	smartconfig_start();
 }
 
 static void test_mac(void *ref, int argc, char *argv[])
@@ -91,6 +100,11 @@ static void test_mqtt(void *ref, int argc, char *argv[])
 {
 	mqtt_app_start();
 }
+static void test_airkiss(void *ref, int argc, char *argv[])
+{
+	my_airkiss_start();
+}
+
 
 const ShellCommand command[] = {
     //system
@@ -98,9 +112,11 @@ const ShellCommand command[] = {
     {"mem", getMem},
     {"reboot", reboot},
     {"version", show_version},
+	{"wifi", test_wifi},
 	{"smartconfig", test_smartconfig},
 	{"mac", test_mac},
 	{"mqtt", test_mqtt},
+	{"airkiss", test_airkiss},
 
     {NULL, NULL}
 };
