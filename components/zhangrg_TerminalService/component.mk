@@ -6,6 +6,6 @@
 # lib(subdirectory_name).a in the build directory. This behaviour is entirely configurable,
 # please read the SDK documents if you need to do this.
 #
-COMPONENT_ADD_INCLUDEDIRS := . esp-shell
+COMPONENT_ADD_INCLUDEDIRS := .
 
-COMPONENT_SRCDIRS :=  . esp-shell
+COMPONENT_SRCDIRS :=  .

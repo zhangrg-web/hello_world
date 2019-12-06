@@ -14,11 +14,23 @@
 
 //TerminalControl
 #include "TerminalControlService.h"
+//nvs_flash_init
+#include "nvs_flash.h"
+//log
+#include "esp_audio_log.h"
+
+
+#define APP_TAG "HELLO_WORLD_MAIN"
 
 void app_main()
-{
-
-
+{	
+    ESP_LOGI(APP_TAG, "[APP] Startup..");
+    ESP_LOGI(APP_TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
+    ESP_LOGI(APP_TAG, "[APP] IDF version: %s", esp_get_idf_version());
+	//必要
+	ESP_ERROR_CHECK(nvs_flash_init());
+	
+	//开启串口指令控制功能
 	terminalControlActive();
     
 	

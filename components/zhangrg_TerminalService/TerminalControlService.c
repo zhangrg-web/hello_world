@@ -41,30 +41,26 @@
 #include "esp_shell.h"
 #include "TerminalControlService.h"
 
+//smartconfig + wifi
+#include "my_smartconfig.h"
+//mqtt
+#include "my_mqtt.h"
 
+#define Tag                            "TERM_CTRL"
 
-#define TERM_TAG                            "TERM_CTRL"
-
-static void reboot(void *ref, int argc, char *argv[])
+static void getMem(void *ref, int argc, char *argv[])
 {
-    esp_restart();
-}
-
-void EspAudioPrintMemory(const char *Tag)
-{
-	multi_heap_info_t info;
+    multi_heap_info_t info;
 	heap_caps_get_info(&info, MALLOC_CAP_DEFAULT);
 	ESP_AUDIO_LOGI(Tag, "Totals:\n	free %d allocated %d min_free %d largest_free_block %d\n", \
 						info.total_free_bytes, info.total_allocated_bytes, info.minimum_free_bytes, info.largest_free_block);
 	ESP_AUDIO_LOGI(Tag, "Memory,total:%d, inter:%d, Dram:%d", esp_get_free_heap_size(),
-				heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
-	   
-
+				heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));	  
 }
 
-static void getMem(void *ref, int argc, char *argv[])
+static void reboot(void *ref, int argc, char *argv[])
 {
-    EspAudioPrintMemory(TERM_TAG);
+    esp_restart();
 }
 
 static void show_version(void *ref, int argc, char *argv[])
@@ -78,24 +74,45 @@ static void show_version(void *ref, int argc, char *argv[])
     printf("------------------------------------------------------------------------------\r\n");
 }
 
+static void test_smartconfig(void *ref, int argc, char *argv[])
+{
+	initialise_wifi();
+}
+
+static void test_mac(void *ref, int argc, char *argv[])
+{
+	uint8_t mac[6] = {0};
+	char macaddr[18] = {0};
+	esp_read_mac((uint8_t *)mac, ESP_MAC_ETH);
+	sprintf(macaddr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	ESP_AUDIO_LOGI(Tag, "%s", macaddr);
+}
+static void test_mqtt(void *ref, int argc, char *argv[])
+{
+	mqtt_app_start();
+}
+
 const ShellCommand command[] = {
     //system
     {"------system-------", NULL},
     {"mem", getMem},
     {"reboot", reboot},
     {"version", show_version},
+	{"smartconfig", test_smartconfig},
+	{"mac", test_mac},
+	{"mqtt", test_mqtt},
 
     {NULL, NULL}
 };
 
 void terminalControlActive(void)
 {
-	ESP_AUDIO_LOGI(TERM_TAG, "terminalControlActive\r\n");
+	ESP_AUDIO_LOGI(Tag, "terminalControlActive\r\n");
     shell_init(command, NULL);
 }
 void terminalControlDeactive(void)
 {
-    ESP_AUDIO_LOGI(TERM_TAG, "terminalControlStop\r\n");
+    ESP_AUDIO_LOGI(Tag, "terminalControlStop\r\n");
     shell_stop();
 }
 
