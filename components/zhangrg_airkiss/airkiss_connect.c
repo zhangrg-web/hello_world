@@ -42,6 +42,8 @@
 #include "airkiss.h"
 #include "airkiss_connect.h"
 
+
+
 #define AIRKISS_DEBUG_ON                0
 
 #ifdef CONFIG_AIRKISS_NOTIFY
@@ -550,7 +552,10 @@ static void airkiss_timeout_callback(void *timer_arg)
         xEventGroupSetBits(airkiss_evt_group, AIRKISS_TIMEOUT_BIT);
     }
 }
-
+/*
+#define CONFIG_AIRKISS_CRYPT
+#define CONFIG_AIRKISS_KEY "e1c361cc29e43fb8"
+*/
 static void airkiss_start(int timeout)
 {
     int chan_idx = 0;

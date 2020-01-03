@@ -49,6 +49,8 @@
 #include "my_mqtt.h"
 //airkiss
 #include "my_airkiss.h"
+//test_Semaphore
+#include "my_Semaphore.h"
 
 #define Tag                            "TERM_CTRL"
 
@@ -104,8 +106,10 @@ static void test_airkiss(void *ref, int argc, char *argv[])
 {
 	my_airkiss_start();
 }
-
-
+static void test_Semaphore(void *ref, int argc, char *argv[])
+{
+	my_Semaphore_start();
+}
 const ShellCommand command[] = {
     //system
     {"------system-------", NULL},
@@ -117,6 +121,7 @@ const ShellCommand command[] = {
 	{"mac", test_mac},
 	{"mqtt", test_mqtt},
 	{"airkiss", test_airkiss},
+	{"semaphore", test_Semaphore},
 
     {NULL, NULL}
 };

@@ -6,6 +6,7 @@
 #include "esp_err.h"
 #include "esp_audio_log.h"
 #include "airkiss_connect.h"
+#include "airkiss.h"
 
 static const char *TAG = "my_airkiss";
 
