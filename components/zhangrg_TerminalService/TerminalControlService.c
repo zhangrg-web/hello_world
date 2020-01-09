@@ -21,10 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+#include "my_head.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <math.h>
 #include <ctype.h>
 
@@ -33,7 +31,6 @@
 #include "freertos/semphr.h"
 #include "freertos/queue.h"
 
-#include "esp_audio_log.h"
 #include "esp_system.h"
 #include "driver/gpio.h"
 #include "soc/io_mux_reg.h"
@@ -41,27 +38,25 @@
 #include "esp_shell.h"
 #include "TerminalControlService.h"
 
-//wifi
-#include "my_wifi.h"
-//smartconfig
-#include "my_smartconfig.h"
-//mqtt
-#include "my_mqtt.h"
-//airkiss
-#include "my_airkiss.h"
-//test_Semaphore
-#include "my_Semaphore.h"
+
 
 #define Tag                            "TERM_CTRL"
 
+extern MY_INFO_T My_Info;
+
 static void getMem(void *ref, int argc, char *argv[])
 {
+#if 0
     multi_heap_info_t info;
 	heap_caps_get_info(&info, MALLOC_CAP_DEFAULT);
 	ESP_AUDIO_LOGI(Tag, "Totals:\n	free %d allocated %d min_free %d largest_free_block %d\n", \
 						info.total_free_bytes, info.total_allocated_bytes, info.minimum_free_bytes, info.largest_free_block);
 	ESP_AUDIO_LOGI(Tag, "Memory,total:%d, inter:%d, Dram:%d", esp_get_free_heap_size(),
 				heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));	  
+#else
+	ESP_AUDIO_LOGI(Tag, "Memory,total:%d", esp_get_free_heap_size());	  
+
+#endif
 }
 
 static void reboot(void *ref, int argc, char *argv[])
@@ -110,18 +105,44 @@ static void test_Semaphore(void *ref, int argc, char *argv[])
 {
 	my_Semaphore_start();
 }
+static void test_set_sysinfo(void *ref, int argc, char *argv[])
+{
+	if(!argv[0] || !argv[1]){
+		ESP_AUDIO_LOGE(Tag,"Input error, format: set_sysinfo 10 20"); 
+		return;
+	}
+	My_Info.brightness = atoi(argv[0]);
+	My_Info.vol = atoi(argv[1]);
+
+	Set_SystemInfo(My_Info);
+}
+static void test_get_sysinfo(void *ref, int argc, char *argv[])
+{
+	Get_SystemInfo(&My_Info);
+	ESP_AUDIO_LOGI(Tag, "Get_SystemInfo success:\n  mac:%s\n  brightness:%d\n  vol:%d", \
+					My_Info.device_mac, My_Info.brightness, My_Info.vol);
+}
+static void test_ota(void *ref, int argc, char *argv[])
+{
+	test_ota_start();
+}
+
+
 const ShellCommand command[] = {
     //system
     {"------system-------", NULL},
-    {"mem", getMem},
-    {"reboot", reboot},
-    {"version", show_version},
-	{"wifi", test_wifi},
-	{"smartconfig", test_smartconfig},
-	{"mac", test_mac},
-	{"mqtt", test_mqtt},
-	{"airkiss", test_airkiss},
-	{"semaphore", test_Semaphore},
+    {"mem", 			getMem},
+    {"reboot", 			reboot},
+    {"version", 		show_version},
+	{"wifi", 			test_wifi},
+	{"smartconfig",		test_smartconfig},
+	{"mac", 			test_mac},
+	{"mqtt", 			test_mqtt},
+	{"airkiss", 		test_airkiss},
+	{"semaphore", 		test_Semaphore},
+	{"set_sysinfo", 	test_set_sysinfo},
+	{"get_sysinfo", 	test_get_sysinfo},
+	{"ota",				test_ota},
 
     {NULL, NULL}
 };
