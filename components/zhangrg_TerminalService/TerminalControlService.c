@@ -26,10 +26,7 @@
 #include <math.h>
 #include <ctype.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/semphr.h"
-#include "freertos/queue.h"
+
 
 #include "esp_system.h"
 #include "driver/gpio.h"
@@ -127,6 +124,16 @@ static void test_ota(void *ref, int argc, char *argv[])
 	test_ota_start();
 }
 
+static void timer_start(void *ref, int argc, char *argv[])
+{
+	test_timer_start();
+}
+
+static void timer_stop(void *ref, int argc, char *argv[])
+{
+	test_timer_stop();
+}
+
 
 const ShellCommand command[] = {
     //system
@@ -143,6 +150,8 @@ const ShellCommand command[] = {
 	{"set_sysinfo", 	test_set_sysinfo},
 	{"get_sysinfo", 	test_get_sysinfo},
 	{"ota",				test_ota},
+	{"timerstart",		timer_start},
+	{"timerstop",		timer_stop},
 
     {NULL, NULL}
 };
